@@ -1,6 +1,6 @@
 /* Automatically generated file; DO NOT EDIT */
 /* Espressif IoT Development Framework Linker Script */
-/* Generated from: C:\Users\jakob\Documents\ESP-Home\FallDetecter\build\esp-idf\esp_system\ld\sections.ld.in */
+/* Generated from: C:\Users\46707\Documents\VSCode\FallDetecter\build\esp-idf\esp_system\ld\sections.ld.in */
 
 /*
 
