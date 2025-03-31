@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "hello_world",
-    "project_version":    "1",
+    "project_version":    "50b9101-dirty",
     "project_path":       "C:/Users/jakob/Documents/ESP-Home/FallDetecter",
     "idf_path":           "C:/esp/esp-idf",
     "build_dir":          "C:/Users/jakob/Documents/ESP-Home/FallDetecter/build",
@@ -1191,12 +1191,12 @@
             "type": "LIBRARY",
             "lib": "__idf_main",
             "reqs": [],
-            "priv_reqs": [ "spi_flash" ],
+            "priv_reqs": [ "spi_flash", "esp_driver_i2c" ],
             "managed_reqs": [],
             "managed_priv_reqs": [],
             "file": "C:/Users/jakob/Documents/ESP-Home/FallDetecter/build/esp-idf/main/libmain.a",
-            "sources": [ "C:/Users/jakob/Documents/ESP-Home/FallDetecter/main/fall_detecter.c" ],
-            "include_dirs": []
+            "sources": [ "C:/Users/jakob/Documents/ESP-Home/FallDetecter/main/bmi.c", "C:/Users/jakob/Documents/ESP-Home/FallDetecter/main/fall_detecter.c" ],
+            "include_dirs": [ "." ]
         },
         "mbedtls": {
             "alias": "idf::mbedtls",
@@ -2842,10 +2842,10 @@
             "dir": "C:/Users/jakob/Documents/ESP-Home/FallDetecter/main",
             "lib": "__idf_main",
             "reqs": [],
-            "priv_reqs": [ "spi_flash" ],
+            "priv_reqs": [ "spi_flash", "esp_driver_i2c" ],
             "managed_reqs": [],
             "managed_priv_reqs": [],
-            "include_dirs": []
+            "include_dirs": [ "." ]
         }
     },
     "debug_prefix_map_gdbinit": ""
