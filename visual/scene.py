@@ -1,30 +1,44 @@
-from vpython import box, vector, rate
+from vpython import box, vector
 import numpy as np
-import keyboard
 
-# initial orientation
-custom_axis = vector(1, 1, 0).norm()
-custom_up = vector(0, 0, 1).norm()
+class Scene():
 
-# create box
-scene = box(size=vector(2, 0.5, 1), color=vector(0, 1, 0), axis=custom_axis, up=custom_up)
+    def __init__(self):
 
-# store initial axis rotation and length
-original_axis_length = scene.axis.mag
-original_up_length = scene.up.mag
-initial_orientation = custom_axis, custom_up
+        # create 3d shape
+        self.box = box(size=vector(5, 0.5, 1), color=vector(0, 1, 0))
 
-roll, pitch, yaw = np.radians(30), np.radians(20), np.radians(10)
+        # set initial orientation
+        self.initial_roll = np.radians(30)
+        self.initial_pitch = np.radians(20)
+        self.initial_yaw = np.radians(10)
+        self.reset_orientation()
 
-while True:
-    rate(50)
-    if keyboard.is_pressed("1"):
-        scene.rotate(angle=roll, axis=vector(1, 0, 0))
-    if keyboard.is_pressed("2"):
-        scene.rotate(angle=pitch, axis=vector(0, 1, 0))
-    if keyboard.is_pressed("3"):
-        scene.rotate(angle=yaw, axis=vector(0, 0, 1))
-    # reset
-    if keyboard.is_pressed("4"):
-        scene.axis = initial_orientation[0] * original_axis_length
-        scene.up = initial_orientation[1] * original_up_length
+    def __del__(self):
+        print("exiting cpskit")
+
+    # apply rotation matrix
+    def rotate_vector(self, v, roll, pitch, yaw):
+
+        Rx = np.array([[1, 0, 0], 
+                    [0, np.cos(roll), -np.sin(roll)], 
+                    [0, np.sin(roll), np.cos(roll)]])
+        
+        Ry = np.array([[np.cos(pitch), 0, np.sin(pitch)], 
+                    [0, 1, 0], 
+                    [-np.sin(pitch), 0, np.cos(pitch)]])
+        
+        Rz = np.array([[np.cos(yaw), -np.sin(yaw), 0], 
+                    [np.sin(yaw), np.cos(yaw), 0], 
+                    [0, 0, 1]])
+        
+        # combine rotations
+        R = Rz @ Ry @ Rx
+        rotated_v = R @ np.array([v.x, v.y, v.z])
+        
+        return vector(rotated_v[0], rotated_v[1], rotated_v[2])
+
+    # reset orientation
+    def reset_orientation(self):
+        self.box.axis = self.rotate_vector(vector(1, 0, 0), self.initial_roll, self.initial_pitch, self.initial_yaw)
+        self.box.up = self.rotate_vector(vector(0, 1, 0), self.initial_roll, self.initial_pitch, self.initial_yaw)
