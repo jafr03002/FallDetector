@@ -1,4 +1,4 @@
-from vpython import box, vector
+from vpython import box, vector, arrow
 import numpy as np
 
 class Scene():
@@ -8,14 +8,14 @@ class Scene():
         # create 3d shape
         self.box = box(size=vector(5, 0.5, 1), color=vector(0, 1, 0))
 
+        # create arrow to show acceleration
+        self.acc_arrow = arrow(pos=self.box.pos, axis=vector(0, 0, 0), color=vector(1, 0, 0), shaftwidth=0.1)
+
         # set initial orientation
         self.initial_roll = np.radians(30)
         self.initial_pitch = np.radians(20)
         self.initial_yaw = np.radians(10)
         self.reset_orientation()
-
-    def __del__(self):
-        print("exiting cpskit")
 
     # apply rotation matrix
     def rotate_vector(self, v, roll, pitch, yaw):
@@ -42,3 +42,8 @@ class Scene():
     def reset_orientation(self):
         self.box.axis = self.rotate_vector(vector(1, 0, 0), self.initial_roll, self.initial_pitch, self.initial_yaw)
         self.box.up = self.rotate_vector(vector(0, 1, 0), self.initial_roll, self.initial_pitch, self.initial_yaw)
+
+    # visualize acceleration
+    def update_acc(self, acc_vector):
+        self.acc_arrow.axis = acc_vector
+        self.acc_arrow.pos = self.box.pos
