@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "sdkconfig.h": "c",
-        "esp_mac.h": "c"
+        "esp_mac.h": "c",
+        "i2c_master.h": "c"
     }
 }
