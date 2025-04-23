@@ -1,6 +1,14 @@
 /*
- *  Fall detector main file 
- *
+ *  Fall Detection thesis project with the use of bmi160/MPU6050 and the ESP32 microcontroller
+ *  
+ *  fall_detector.c:
+ *  
+ *  This version of the system uses the MPU6050 temporarily while waiting for bmi160 to arrive
+ *  Initializes and configures the i2c busses
+ *  Retrieves and calls bmi functions through bmi.h 
+ *  Calculating the raw data into accel: m/s^2 and gyr: deg/s
+ *  Value printouts
+ *  
  *  Author: Jakob Freij
  */
 
@@ -20,6 +28,10 @@
 #define SDA 21
 #define SCL 22
 
+#define CHIPID 0x00
+
+/* Stores raw values of every axis*/
+
 int16_t ACC_X = 0;
 int16_t ACC_Y = 0;
 int16_t ACC_Z = 0;
@@ -28,12 +40,13 @@ int16_t GYR_X = 0;
 int16_t GYR_Y = 0;
 int16_t GYR_Z = 0;
 
-TaskHandle_t BMI180ReadHandle = NULL;
-TaskHandle_t CheckAddressHandle = NULL;
 
-uint8_t who_buf[1];
+/* Task handler for referencing */
+TaskHandle_t BMI180ReadHandle = NULL;
 
 float g = 9.81;
+
+/* Actual metrics variable placeholders for printouts */
 
 float ax_real = 0;
 float ay_real = 0;
@@ -47,6 +60,8 @@ float gx_real = 0;
 float gy_real = 0;
 float gz_real = 0;
 
+/* Master i2c bus init and config */
+
 static void i2c_master_init_bus(i2c_master_bus_handle_t *bus_handle){
     i2c_master_bus_config_t i2c_mst_config = {
         .clk_source = I2C_CLK_SRC_DEFAULT,
@@ -56,8 +71,10 @@ static void i2c_master_init_bus(i2c_master_bus_handle_t *bus_handle){
         .flags.enable_internal_pullup = true,
         .glitch_ignore_cnt = 7,
     };
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, bus_handle));
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, bus_handle)); /* the i2c master bus handle, referal for the R/W functions */
 }
+
+/* Master i2c bus handle init and dev configuration */
 
 static void i2c_master_init_handle(i2c_master_bus_handle_t *bus_handle, i2c_master_dev_handle_t *dev_handle, uint8_t address){
     i2c_device_config_t dev_config = {
@@ -65,47 +82,45 @@ static void i2c_master_init_handle(i2c_master_bus_handle_t *bus_handle, i2c_mast
         .device_address = address,
         .scl_speed_hz = 100000,
     };
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_config, dev_handle));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_config, dev_handle)); // device handler
 }
 
-void check_address_task(void *arg){
-    i2c_master_bus_handle_t *bus_handle = (i2c_master_bus_handle_t*) arg;
-    while(1){
-        esp_err_t err;
-        // Using i2c_master_probe on a for loop going through all available address
-        for(uint8_t i = 3; i < 0x78; i++){
-            err = i2c_master_probe(*bus_handle, i, 1000);
-            if (err == ESP_OK){
-                printf("I2C Scanner found I2C device at: 0x%X \n", i);
-            }
-        }
-        printf("I2C_Scanner complete \n");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    vTaskDelete(NULL);
-}
-
-void detector_task(void *arg){
+void chip_id_task(void *arg){
     i2c_master_bus_handle_t bus_handle;
     i2c_master_dev_handle_t dev_handle;
     i2c_master_init_bus(&bus_handle);
 
     i2c_master_init_handle(&bus_handle, &dev_handle, DEV_ADDR);
-
+    BMI160_Init(dev_handle);
+    //BMI160_Init(dev_handle);
     while(1){
-        uint8_t wakeup_data = 0x00;
-        BMI160_WriteRegister(dev_handle, MPU_PWR_MGMT, wakeup_data);
+        uint8_t chip_id_data = 0x00;
+        BMI160_ReadRegister(dev_handle, CHIPID, &chip_id_data, 1);
+        printf("Chip id: 0x%02X\n", chip_id_data);
+        vTaskDelay(1000/portTICK_PERIOD_MS);
+    }
+}
 
-        ACC_X = MPU_ReadAccel(dev_handle, AXIS_X);
-        ACC_Y = MPU_ReadAccel(dev_handle, AXIS_Y);
-        ACC_Z = MPU_ReadAccel(dev_handle, AXIS_Z);
+void detector_task(void *arg){
+    /* i2c init */
+    i2c_master_bus_handle_t bus_handle;
+    i2c_master_dev_handle_t dev_handle;
+    i2c_master_init_bus(&bus_handle);
 
-        GYR_X = MPU_ReadGyro(dev_handle, AXIS_X);
-        GYR_Y = MPU_ReadGyro(dev_handle, AXIS_Y);
-        GYR_Z = MPU_ReadGyro(dev_handle, AXIS_Z);
+    i2c_master_init_handle(&bus_handle, &dev_handle, DEV_ADDR);
+    BMI160_Init(dev_handle);
+    while(1){
 
-        //printf("first A: %d, %d, %d G: %d, %d, %d\n", ACC_X, ACC_Y, ACC_Z, GYR_X, GYR_Y, GYR_Z);
+        ACC_X = BMI160_ReadAccel(dev_handle, AXIS_X);
+        ACC_Y = BMI160_ReadAccel(dev_handle, AXIS_Y);
+        ACC_Z = BMI160_ReadAccel(dev_handle, AXIS_Z);
 
+        GYR_X = BMI160_ReadGyro(dev_handle, AXIS_X);
+        GYR_Y = BMI160_ReadGyro(dev_handle, AXIS_Y);
+        GYR_Z = BMI160_ReadGyro(dev_handle, AXIS_Z);
+        
+        /* Calculate real accel and gyr values */
+        
         ax_real = (float)ACC_X/16384.0;
         ay_real = (float)ACC_Y/16384.0;
         az_real = (float)ACC_Z/16384.0;
@@ -119,7 +134,7 @@ void detector_task(void *arg){
         gz_real = (float)GYR_Z/131.0;
 
         printf("Accel(m/s^2): X: %0.2f, Y: %0.2f, Z: %0.2f Gyro(dps): X: %0.1f, Y: %0.1f, Z: %0.1f\n", ax_m_per_s, ay_m_per_s, az_m_per_s, gx_real, gy_real, gz_real);
-    
+        
         vTaskDelay(1000/portTICK_PERIOD_MS); 
     }
 
@@ -128,4 +143,5 @@ void detector_task(void *arg){
 void app_main(void)
 {
     xTaskCreatePinnedToCore(detector_task, "detector", 4096, NULL, 10, &BMI180ReadHandle, 1); 
+    //xTaskCreatePinnedToCore(chip_id_task, "chip id", 4096, NULL, 10, &BMI180ReadHandle, 1); 
 }

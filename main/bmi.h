@@ -12,9 +12,9 @@
 #include "esp_system.h"
 #include "driver/i2c_master.h"
 
-#define CMD       0x7E
-#define MPU_PWR_MGMT 0x6B
-#define SENSITIVITY 16384 //16 bit signed integer (2^15/2g)
+#define CMD              0x7E
+#define MPU_PWR_MGMT     0x6B
+#define SENSITIVITY      16384 //16 bit signed integer (2^15/2g)
 #define FULL_SCALE_RANGE 250 //250±dps
 
 #define ACC_CONF  0x40
@@ -60,7 +60,7 @@
 
 #define DATA_LENGTH 100
 
-#define I2C_MASTER_TIMEOUT_MS       1000
+#define I2C_MASTER_TIMEOUT_MS 1000
 
 typedef enum{
    AXIS_X,
@@ -71,8 +71,8 @@ typedef enum{
 void BMI160_Init(i2c_master_dev_handle_t handle);
 esp_err_t BMI160_ReadRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t * data, size_t len);
 esp_err_t BMI160_WriteRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t data_buf);
-float BMI160_ReadAccel(i2c_master_dev_handle_t handle, Axis axis);
-float BMI160_ReadGyro(i2c_master_dev_handle_t handle, Axis axis);
+int16_t BMI160_ReadAccel(i2c_master_dev_handle_t handle, Axis axis);
+int16_t BMI160_ReadGyro(i2c_master_dev_handle_t handle, Axis axis);
 int16_t MPU_ReadAccel(i2c_master_dev_handle_t handle, Axis axis);
 int16_t MPU_ReadGyro(i2c_master_dev_handle_t handle, Axis axis);
 

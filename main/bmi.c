@@ -14,10 +14,10 @@
 uint8_t read_buf[2];
 
 void BMI160_Init(i2c_master_dev_handle_t dev_handle) {
-    uint8_t init_sequence[][2] = {{CMD, ACC_CONF},{CMD, ACC_RANGE},{CMD, GYR_CONF},{CMD, GYR_RANGE}};
+    uint8_t init_sequence[][2] = {{CMD, 0x11}, {CMD, 0x15}, {ACC_RANGE, 0x03},{GYR_RANGE, 0x03}}; //Accel: ±2g, Gyro: ±250°/s
     
     for(int i=0; i < 4; i++) {
-        BMI160_WriteRegister(dev_handle, CMD, init_sequence[i][1]);
+        BMI160_WriteRegister(dev_handle, init_sequence[i][0], init_sequence[i][1]);
         vTaskDelay(10/portTICK_PERIOD_MS);
     }
 }
@@ -32,9 +32,9 @@ esp_err_t BMI160_ReadRegister(i2c_master_dev_handle_t dev_handle, uint8_t regg_a
     return i2c_master_transmit_receive(dev_handle, &regg_adress, 1, data_buf, len, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
 
-/*float BMI160_ReadAccel(i2c_master_dev_handle_t dev_handle, Axis axis){
-    float axis_value = 0;
-    uint8_t read_buf[2];
+int16_t BMI160_ReadAccel(i2c_master_dev_handle_t dev_handle, Axis axis){
+    int16_t axis_value = 0;
+
     switch(axis){
         case AXIS_X:
             BMI160_ReadRegister(dev_handle, ACC_MSB_X, &read_buf[0], 1);
@@ -60,9 +60,9 @@ esp_err_t BMI160_ReadRegister(i2c_master_dev_handle_t dev_handle, uint8_t regg_a
     return axis_value;
 }
 
-float BMI160_ReadGyro(i2c_master_dev_handle_t dev_handle, Axis axis){
+int16_t BMI160_ReadGyro(i2c_master_dev_handle_t dev_handle, Axis axis){
     int16_t axis_value = 0;
-    uint8_t read_buf[2];
+
     switch(axis){
         case AXIS_X:
             BMI160_ReadRegister(dev_handle, GYR_MSB_X, &read_buf[0], 1);
@@ -86,8 +86,8 @@ float BMI160_ReadGyro(i2c_master_dev_handle_t dev_handle, Axis axis){
         break;
     }
     return axis_value;
-}*/
-
+}
+/*
 int16_t MPU_ReadAccel(i2c_master_dev_handle_t dev_handle, Axis axis) {
     int16_t axis_value = 0;
     
@@ -142,7 +142,7 @@ int16_t MPU_ReadGyro(i2c_master_dev_handle_t dev_handle, Axis axis) {
             break;
     }
     return axis_value;
-}
+}*/
 
 
 
