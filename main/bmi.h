@@ -68,7 +68,7 @@ typedef enum{
    AXIS_Z,
 }Axis;
 
-void BMI160_Init(i2c_master_dev_handle_t handle);
+esp_err_t BMI160_Init(i2c_master_dev_handle_t handle);
 esp_err_t BMI160_ReadRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t * data, size_t len);
 esp_err_t BMI160_WriteRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t data_buf);
 int16_t BMI160_ReadAccel(i2c_master_dev_handle_t handle, Axis axis);

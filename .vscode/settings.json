@@ -2,6 +2,10 @@
     "files.associations": {
         "sdkconfig.h": "c",
         "esp_mac.h": "c",
-        "i2c_master.h": "c"
+        "i2c_master.h": "c",
+        "system_error": "c",
+        "future": "c",
+        "windows.h": "c",
+        "pipe.h": "c"
     }
 }

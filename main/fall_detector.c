@@ -1,9 +1,8 @@
 /*
- *  Fall Detection thesis project with the use of bmi160/MPU6050 and the ESP32 microcontroller
+ *  Fall Detection thesis project with the use of BMI160 and the ESP32 mcu
  *  
  *  fall_detector.c:
  *  
- *  This version of the system uses the MPU6050 temporarily while waiting for bmi160 to arrive
  *  Initializes and configures the i2c busses
  *  Retrieves and calls bmi functions through bmi.h 
  *  Calculating the raw data into accel: m/s^2 and gyr: deg/s
@@ -28,8 +27,6 @@
 #define SDA 21
 #define SCL 22
 
-#define CHIPID 0x00
-
 /* Stores raw values of every axis*/
 
 int16_t ACC_X = 0;
@@ -42,6 +39,7 @@ int16_t GYR_Z = 0;
 
 
 /* Task handler for referencing */
+
 TaskHandle_t BMI180ReadHandle = NULL;
 
 float g = 9.81;
@@ -85,21 +83,15 @@ static void i2c_master_init_handle(i2c_master_bus_handle_t *bus_handle, i2c_mast
     ESP_ERROR_CHECK(i2c_master_bus_add_device(*bus_handle, &dev_config, dev_handle)); // device handler
 }
 
-void chip_id_task(void *arg){
-    i2c_master_bus_handle_t bus_handle;
-    i2c_master_dev_handle_t dev_handle;
-    i2c_master_init_bus(&bus_handle);
-
-    i2c_master_init_handle(&bus_handle, &dev_handle, DEV_ADDR);
-    BMI160_Init(dev_handle);
-    //BMI160_Init(dev_handle);
-    while(1){
-        uint8_t chip_id_data = 0x00;
-        BMI160_ReadRegister(dev_handle, CHIPID, &chip_id_data, 1);
-        printf("Chip id: 0x%02X\n", chip_id_data);
-        vTaskDelay(1000/portTICK_PERIOD_MS);
-    }
-}
+/* 
+ * detector_task - 100Hz IMU values retriever
+ * FD main loop - initializes i2c master bus and dev handle
+ * Reads BMI160 gyro and accelerometer values across 6-axises
+ * Caulculate real world metrics from raw data
+ * Prints real values
+ * Repeat after 10ms
+ */
+ 
 
 void detector_task(void *arg){
     /* i2c init */
@@ -110,7 +102,6 @@ void detector_task(void *arg){
     i2c_master_init_handle(&bus_handle, &dev_handle, DEV_ADDR);
     BMI160_Init(dev_handle);
     while(1){
-
         ACC_X = BMI160_ReadAccel(dev_handle, AXIS_X);
         ACC_Y = BMI160_ReadAccel(dev_handle, AXIS_Y);
         ACC_Z = BMI160_ReadAccel(dev_handle, AXIS_Z);
@@ -133,15 +124,13 @@ void detector_task(void *arg){
         gy_real = (float)GYR_Y/131.0;
         gz_real = (float)GYR_Z/131.0;
 
-        printf("Accel(m/s^2): X: %0.2f, Y: %0.2f, Z: %0.2f Gyro(dps): X: %0.1f, Y: %0.1f, Z: %0.1f\n", ax_m_per_s, ay_m_per_s, az_m_per_s, gx_real, gy_real, gz_real);
-        
-        vTaskDelay(1000/portTICK_PERIOD_MS); 
+        printf("%0.2f %0.2f %0.2f %0.1f %0.1f %0.1f\n", ax_m_per_s, ay_m_per_s, az_m_per_s, gx_real, gy_real, gz_real);
+        fflush(stdout);
+        vTaskDelay(10/portTICK_PERIOD_MS);
     }
-
 }
 
 void app_main(void)
 {
     xTaskCreatePinnedToCore(detector_task, "detector", 4096, NULL, 10, &BMI180ReadHandle, 1); 
-    //xTaskCreatePinnedToCore(chip_id_task, "chip id", 4096, NULL, 10, &BMI180ReadHandle, 1); 
 }
