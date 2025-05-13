@@ -1,6 +1,7 @@
-import serial, threading, time
+import serial, threading, time, csv
 from vpython import vector
 from scene import Scene
+from datetime import datetime
 
 def dps_conversion(val):
     time.sleep(1)
@@ -12,7 +13,14 @@ with serial.Serial(port=('COM5'), baudrate=115200, timeout=1) as ser:
     while True:
         line = ser.readline().decode('utf-8').strip()
         values = list(map(float, line.split()))
-        print("IMU values: {}", values)
+        
+        t = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        values.insert(0, t)
+
+        with open("log.csv", "a", newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(values)
+
 
         dps_thread = threading.Thread(target=dps_conversion([values[-1], values[-2], values[-3]]), daemon=True)
         dps_thread.start()
