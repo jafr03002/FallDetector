@@ -13,8 +13,8 @@ with serial.Serial(port=('COM5'), baudrate=115200, timeout=1) as ser:
     while True:
         line = ser.readline().decode('utf-8').strip()
         values = list(map(float, line.split()))
-        
-        t = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        t = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[-3]
         values.insert(0, t)
 
         with open("log.csv", "a", newline='') as file:
