@@ -16,6 +16,7 @@
 
 #define ACC_RANGE 0x41
 #define GYR_RANGE 0x43
+#define I2C_MASTER_TIMEOUT_MS 1000
 
 #define ACC_LSB_X 0x12
 #define ACC_MSB_X 0x13
@@ -39,7 +40,7 @@ typedef enum{
    AXIS_Z,
 }Axis;
 
-esp_err_t BMI160_Init(i2c_master_dev_handle_t handle);
+void BMI160_Init(i2c_master_dev_handle_t handle);
 esp_err_t BMI160_ReadRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t * data, size_t len);
 esp_err_t BMI160_WriteRegister(i2c_master_dev_handle_t handle, uint8_t regg_adress, uint8_t data_buf);
 int16_t BMI160_ReadAccel(i2c_master_dev_handle_t handle, Axis axis);
