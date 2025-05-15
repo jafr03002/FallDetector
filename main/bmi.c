@@ -15,7 +15,7 @@ uint8_t read_buf[2];
 
 /* BMI160_Init - Excecutes upon init of the FD system ensuring power-ons and configurations */
 
-esp_err_t BMI160_Init(i2c_master_dev_handle_t dev_handle) {
+void BMI160_Init(i2c_master_dev_handle_t dev_handle) {
     uint8_t init_sequence[][2] = {{CMD, 0x11}, {CMD, 0x15}, {ACC_RANGE, 0x03},{GYR_RANGE, 0x03}}; //Accel: ±2g, Gyro: ±250°/s
     
     for(int i=0; i < 4; i++) {

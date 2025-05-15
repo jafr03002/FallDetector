@@ -7,5 +7,6 @@
         "future": "c",
         "windows.h": "c",
         "pipe.h": "c"
-    }
+    },
+    "idf.flashType": "JTAG"
 }

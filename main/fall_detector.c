@@ -126,7 +126,7 @@ void detector_task(void *arg){
 
         printf("%0.2f %0.2f %0.2f %0.1f %0.1f %0.1f\n", ax_m_per_s, ay_m_per_s, az_m_per_s, gx_real, gy_real, gz_real);
         fflush(stdout);
-        vTaskDelay(10/portTICK_PERIOD_MS);
+        vTaskDelay(50/portTICK_PERIOD_MS);
     }
 }
 
